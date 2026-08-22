@@ -6,6 +6,7 @@ import {
 	updateReportSchema,
 	closeDaySchema,
 	updateRideSchema,
+	updateExpenseSchema,
 } from '../utils/validation';
 import {
 	startDay,
@@ -18,6 +19,7 @@ import {
 import { requireAuth } from '../middleware/requireAuth';
 import { requireOwnership } from '../middleware/requireOwnership';
 import { addRide } from '../services/ride.service';
+import { addExpense } from '../services/expense.service';
 
 const dailyReports = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -281,6 +283,63 @@ dailyReports.post('/:id/rides', requireOwnership, async (c) => {
 		return c.json<ApiResponse<{ ride: typeof newRide }>>({
 			success: true,
 			data: { ride: newRide },
+		});
+	} catch (error) {
+		if (error instanceof z.ZodError) {
+			return c.json<ApiError>(
+				{
+					success: false,
+					error: error.errors[0].message,
+					code: 'VALIDATION_ERROR',
+				},
+				400,
+			);
+		}
+		if (error instanceof Error) {
+			if (
+				error.message.includes('cerrado') ||
+				error.message.includes('Debe configurar') ||
+				error.message.includes('permiso') ||
+				error.message.includes('no encontrado')
+			) {
+				return c.json<ApiError>(
+					{ success: false, error: error.message, code: 'VALIDATION_ERROR' },
+					400,
+				);
+			}
+		}
+		return c.json<ApiError>(
+			{
+				success: false,
+				error: 'Internal Server Error',
+				code: 'INTERNAL_ERROR',
+			},
+			500,
+		);
+	}
+});
+
+// POST /daily-reports/:id/outcomes (nested - outcome is a sub-resource of the report)
+dailyReports.post('/:id/expenses', requireOwnership, async (c) => {
+	try {
+		const report = c.get('report')!; // Already validated by requireOwnership
+		const body = await c.req.json();
+
+		// Use the pre-defined updateOutcomeSchema which already omits report_id
+		const validated = updateExpenseSchema.parse(body);
+
+		const newExpense = await addExpense(
+			c.env.DB,
+			report.driver_id,
+			report.id,
+			validated.category,
+			validated.amount,
+			validated.description,
+		);
+
+		return c.json<ApiResponse<{ outcome: typeof newExpense }>>({
+			success: true,
+			data: { outcome: newExpense },
 		});
 	} catch (error) {
 		if (error instanceof z.ZodError) {

@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+//
+// region schemas auth
+//
 export const registerSchema = z.object({
 	email: z.string().email('Invalid email format').toLowerCase(),
 	password: z.string().min(8, 'Password must be at least 8 characters'),
@@ -11,6 +14,9 @@ export const loginSchema = z.object({
 	password: z.string().min(1, 'Password is required'),
 });
 
+//
+// region schemas daily reports
+//
 export const startDaySchema = z.object({
 	startingMileage: z.number().int().min(0, 'Starting mileage must be positive'),
 	startingGasoline: z
@@ -31,7 +37,9 @@ export const closeDaySchema = z.object({
 	notes: z.string().optional(),
 });
 
-// 1. Define the base ZodObject FIRST (this has the .omit() method)
+//
+// region schemas rides
+//
 const baseRideObject = z.object({
 	report_id: z.string().uuid('ID de reporte inválido'),
 	amount: z.number().int().min(1, 'El monto debe ser mayor a 0'),
@@ -44,7 +52,6 @@ const baseRideObject = z.object({
 	client_id: z.string().uuid().optional(),
 });
 
-// 2. Apply .refine() to the base object for CREATING a ride
 export const rideSchema = baseRideObject.refine(
 	(data) => data.payment_method !== 'credito' || !!data.client_id,
 	{
@@ -53,10 +60,36 @@ export const rideSchema = baseRideObject.refine(
 	},
 );
 
-// 3. Use .omit() on the BASE OBJECT, then apply .refine() for UPDATING a ride
 export const updateRideSchema = baseRideObject
 	.omit({ report_id: true })
 	.refine((data) => data.payment_method !== 'credito' || !!data.client_id, {
 		message: 'El client_id es obligatorio cuando el método de pago es credito',
 		path: ['client_id'],
+	});
+
+//
+// region schemas expenses
+//
+const baseExpenseObject = z.object({
+	report_id: z.string().uuid('ID de reporte inválido'),
+	category: z.enum(
+		['gasolina', 'personal', 'alimentacion', 'medicina', 'other'],
+		{
+			errorMap: () => ({ message: 'Categoría inválida' }),
+		},
+	),
+	amount: z.number().int().min(1, 'El monto debe ser mayor a 0'),
+	description: z.string().optional(),
+});
+
+export const expenseSchema = baseRideObject.refine((data) => data.amount > 0, {
+	message: 'El monto debe ser mayor a 0',
+	path: ['amount'],
+});
+
+export const updateExpenseSchema = baseExpenseObject
+	.omit({ report_id: true })
+	.refine((data) => data.amount > 0, {
+		message: 'El monto debe ser mayor a 0',
+		path: ['amount'],
 	});
