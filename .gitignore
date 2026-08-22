@@ -1,0 +1,93 @@
+# Dependencies
+node_modules/
+**/node_modules/
+.packages
+.pub/
+
+# As packages are no longer pinned, we use a lockfile for testing locally.
+# When unpinning packages, Using lockfiles ensures that failures in PRs are
+# actually due to those PRs, not due to a package being updated.
+!/pubspec.lock
+
+# Build outputs
+build/
+**/build/
+dist/
+**/dist/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# Flutter/Dart
+.dart_tool/
+**/.dart_tool/
+*.g.dart
+**/*.g.dart
+*.freezed.dart
+**/*.freezed.dart
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Firebase
+firebase.json
+**/firebase.json
+firebase_options.dart
+**/firebase_options.dart
+google-services.json
+**/google-services.json
+GoogleService-Info.plist
+**/GoogleService-Info.plist
+
+# Cloudflare
+.wrangler/
+**/.wrangler/
+dev.vars
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+
+# Logs
+*.log
+logs/
+**/logs/
+
+# Testing
+coverage/
+**/coverage/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+**/.cache/
+
+# Monorepo
+.cipd
+.gclient
+.gclient_entries
+.python-version
+.gclient_previous_custom_vars
+.gclient_previous_sync_commits
+
+# Melos
+.melos_run/

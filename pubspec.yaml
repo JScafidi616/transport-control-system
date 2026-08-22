@@ -1,0 +1,38 @@
+name: transport_control
+description: Transport control system monorepo
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dev_dependencies:
+  melos: ^8.0.0
+melos:
+  scripts:
+    analyze:
+      run: melos exec -- "flutter analyze"
+      description: Run flutter analyze in all packages
+
+    test:
+      run: melos exec --dir-exists="test" -- "flutter test"
+      description: Run tests in all packages
+
+    format:
+      run: melos exec -- "dart format ."
+      description: Format all Dart files
+
+    build:mobile:
+      run: |
+        cd apps/mobile
+        flutter build apk
+      description: Build Android APK
+
+    build:web:
+      run: |
+        cd apps/web
+        flutter build web
+      description: Build web app
+
+    clean:
+      run: melos exec -- "flutter clean"
+      description: Clean all Flutter projects

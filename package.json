@@ -1,0 +1,12 @@
+{
+	"private": true,
+	"scripts": {
+		"backend:dev": "pnpm --filter transport-control-backend dev",
+		"backend:deploy": "pnpm --filter transport-control-backend deploy",
+		"test": "pnpm --filter transport-control-backend test",
+		"typecheck": "pnpm --filter transport-control-backend typecheck",
+		"db:migrate:remote": "pnpm --filter transport-control-backend db:migrate:remote",
+		"db:migrate:local": "pnpm --filter transport-control-backend db:migrate:local",
+		"db:list": "pnpm --filter transport-control-backend db:list"
+	}
+}

@@ -1,0 +1,39 @@
+{
+	"name": "transport-control-backend",
+	"version": "1.0.0",
+	"description": "Cloudflare Workers backend for transport control",
+	"main": "src/index.js",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy",
+		"test": "vitest",
+		"typecheck": "tsc --noEmit",
+		"db:migrate:remote": "wrangler d1 execute transport_control_db --file=schema.sql --remote",
+		"db:migrate:local": "wrangler d1 execute transport_control_db --file=schema.sql --local",
+		"db:list": "wrangler d1 list"
+	},
+	"dependencies": {
+		"bcryptjs": "^2.4.3",
+		"hono": "^4.13.3",
+		"jose": "^5.10.0",
+		"zod": "^3.25.76"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "^11.9.0",
+			"onFail": "download"
+		}
+	},
+	"type": "module",
+	"devDependencies": {
+		"@cloudflare/workers-types": "^5.20260820.1",
+		"@types/bcryptjs": "^2.4.6",
+		"typescript": "^5.9.3",
+		"vitest": "^1.6.1",
+		"wrangler": "^4.124.0"
+	}
+}
