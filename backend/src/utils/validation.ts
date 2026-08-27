@@ -97,21 +97,77 @@ export const updateExpenseSchema = baseExpenseObject
 //
 // region schemas sync
 //
-const syncEntitySchema = z.object({
+const syncEntityFields = {
 	id: z.string().uuid(),
 	updated_at: z.number().int(),
-	deleted_at: z.number().int().nullable().optional(),
+	deleted_at: z.number().int().nullable(),
+};
+
+const dailyReportSyncSchema = z.object({
+	...syncEntityFields,
+	driver_id: z.string().uuid(),
+	report_date: z.string(),
+	starting_mileage: z.number().nullable(),
+	ending_mileage: z.number().nullable(),
+	distance_driven: z.number().nullable(),
+	starting_gasoline: z.number().nullable(),
+	ending_gasoline: z.number().nullable(),
+	notes: z.string().nullable(),
+	status: z.enum(['borrador', 'cerrado']),
+	submitted_at: z.number().int().nullable(),
+	created_at: z.number().int(),
+	deleted_at: z.number().int().nullable(),
+});
+
+const rideSyncSchema = z.object({
+	...syncEntityFields,
+	daily_report_id: z.string().uuid(),
+	amount: z.number(),
+	platform: z.string(),
+	payment_method: z.string(),
+	client_id: z.string().uuid().nullable(),
+	is_late_addition: z.number().int(),
+	created_at: z.number().int(),
+	deleted_at: z.number().int().nullable(),
+});
+
+const expensesSyncSchema = z.object({
+	...syncEntityFields,
+	daily_report_id: z.string().uuid(),
+	category: z.string(),
+	amount: z.number(),
+	description: z.string(),
+	created_at: z.number().int(),
+	deleted_at: z.number().int().nullable(),
+});
+
+const clientSyncSchema = z.object({
+	...syncEntityFields,
+	driver_id: z.string().uuid(),
+	full_name: z.string(),
+	phone: z.number().nullable(),
+	created_at: z.number().int(),
+	deleted_at: z.number().int().nullable(),
+});
+
+const creditPaymentSyncSchema = z.object({
+	...syncEntityFields,
+	client_id: z.string().uuid(),
+	amount: z.number(),
+	payment_date: z.string(),
+	notes: z.string().nullable(),
+	created_at: z.number().int(),
 });
 
 export const syncRequestSchema = z
 	.object({
 		last_sync_at: z.number().int().optional(),
 		changes: z.object({
-			daily_reports: z.array(syncEntitySchema).optional(),
-			rides: z.array(syncEntitySchema).optional(),
-			expenses: z.array(syncEntitySchema).optional(),
-			clients: z.array(syncEntitySchema).optional(),
-			credit_payments: z.array(syncEntitySchema).optional(),
+			daily_reports: z.array(dailyReportSyncSchema).optional(),
+			rides: z.array(rideSyncSchema).optional(),
+			expenses: z.array(expensesSyncSchema).optional(),
+			clients: z.array(clientSyncSchema).optional(),
+			credit_payments: z.array(creditPaymentSyncSchema).optional(),
 		}),
 	})
 	.refine(
