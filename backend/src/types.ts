@@ -41,6 +41,9 @@ export type AuthContext = {
 	role: UserRole;
 };
 
+/**
+ * Daily report type
+ */
 export type DailyReport = {
 	id: string;
 	driver_id: string;
@@ -61,4 +64,34 @@ export type DailyReport = {
 export type Variables = {
 	user: AuthContext;
 	report?: DailyReport;
+};
+
+/**
+ * Syncable entity type
+ */
+export type SyncableEntity = {
+	id: string;
+	updated_at: number;
+	deleted_at?: number | null;
+};
+
+/**
+ * Sync changes type
+ */
+export type SyncChanges = {
+	daily_reports?: DailyReport[];
+	rides?: any[];
+	expenses?: any[];
+	clients?: any[];
+	credit_payments?: any[];
+};
+
+/**
+ * Sync conflict type
+ */
+export type SyncConflict = {
+	entity_type: string;
+	entity_id: string;
+	server_version: any;
+	client_version: any;
 };
