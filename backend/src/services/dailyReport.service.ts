@@ -13,7 +13,7 @@ export async function startDay(
 	// Check if report exists for today
 	const existing = await db
 		.prepare(
-			'SELECT * FROM daily_reports WHERE driver_id = ? AND report_date = ?',
+			'SELECT * FROM daily_reports WHERE driver_id = ? AND report_date = ? AND deleted_at IS NULL',
 		)
 		.bind(driverId, today)
 		.first<DailyReport>();
@@ -47,7 +47,7 @@ export async function startDay(
 		.run();
 
 	const newReport = await db
-		.prepare('SELECT * FROM daily_reports WHERE id = ?')
+		.prepare('SELECT * FROM daily_reports WHERE id = ? AND deleted_at IS NULL')
 		.bind(reportId)
 		.first<DailyReport>();
 
@@ -66,7 +66,7 @@ export async function getTodayReport(
 
 	return await db
 		.prepare(
-			'SELECT * FROM daily_reports WHERE driver_id = ? AND report_date = ?',
+			'SELECT * FROM daily_reports WHERE driver_id = ? AND report_date = ? AND deleted_at IS NULL',
 		)
 		.bind(driverId, today)
 		.first<DailyReport>();
@@ -83,13 +83,13 @@ export async function listReports(
 	const [reports, countResult] = await Promise.all([
 		db
 			.prepare(
-				'SELECT * FROM daily_reports WHERE driver_id = ? ORDER BY report_date DESC LIMIT ? OFFSET ?',
+				'SELECT * FROM daily_reports WHERE driver_id = ? ORDER BY report_date DESC LIMIT ? OFFSET ? AND deleted_at IS NULL',
 			)
 			.bind(driverId, limit, offset)
 			.all<DailyReport>(),
 		db
 			.prepare(
-				'SELECT COUNT(*) as count FROM daily_reports WHERE driver_id = ?',
+				'SELECT COUNT(*) as count FROM daily_reports WHERE driver_id = ? AND deleted_at IS NULL',
 			)
 			.bind(driverId)
 			.first<{ count: number }>(),
@@ -117,7 +117,7 @@ export async function getReport(
 	};
 } | null> {
 	const report = await db
-		.prepare('SELECT * FROM daily_reports WHERE id = ?')
+		.prepare('SELECT * FROM daily_reports WHERE id = ? AND deleted_at IS NULL')
 		.bind(reportId)
 		.first<DailyReport>();
 
@@ -127,11 +127,15 @@ export async function getReport(
 
 	const [rides, outcomes] = await Promise.all([
 		db
-			.prepare('SELECT * FROM rides WHERE daily_report_id = ?')
+			.prepare(
+				'SELECT * FROM rides WHERE daily_report_id = ? AND deleted_at IS NULL',
+			)
 			.bind(reportId)
 			.all(),
 		db
-			.prepare('SELECT * FROM outcomes WHERE daily_report_id = ?')
+			.prepare(
+				'SELECT * FROM outcomes WHERE daily_report_id = ? AND deleted_at IS NULL',
+			)
 			.bind(reportId)
 			.all(),
 	]);
@@ -180,7 +184,7 @@ export async function updateReport(
 	},
 ): Promise<DailyReport> {
 	const report = await db
-		.prepare('SELECT * FROM daily_reports WHERE id = ?')
+		.prepare('SELECT * FROM daily_reports WHERE id = ? AND deleted_at IS NULL')
 		.bind(reportId)
 		.first<DailyReport>();
 
@@ -236,7 +240,7 @@ export async function updateReport(
 		.run();
 
 	const updated = await db
-		.prepare('SELECT * FROM daily_reports WHERE id = ?')
+		.prepare('SELECT * FROM daily_reports WHERE id = ? AND deleted_at IS NULL')
 		.bind(reportId)
 		.first<DailyReport>();
 
@@ -255,7 +259,7 @@ export async function closeDay(
 	notes?: string,
 ): Promise<DailyReport> {
 	const report = await db
-		.prepare('SELECT * FROM daily_reports WHERE id = ?')
+		.prepare('SELECT * FROM daily_reports WHERE id = ? AND deleted_at IS NULL')
 		.bind(reportId)
 		.first<DailyReport>();
 
@@ -306,7 +310,7 @@ export async function closeDay(
 		.run();
 
 	const closed = await db
-		.prepare('SELECT * FROM daily_reports WHERE id = ?')
+		.prepare('SELECT * FROM daily_reports WHERE id = ? AND deleted_at IS NULL')
 		.bind(reportId)
 		.first<DailyReport>();
 
