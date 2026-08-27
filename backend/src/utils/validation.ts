@@ -93,3 +93,38 @@ export const updateExpenseSchema = baseExpenseObject
 		message: 'El monto debe ser mayor a 0',
 		path: ['amount'],
 	});
+
+//
+// region schemas sync
+//
+const syncEntitySchema = z.object({
+	id: z.string().uuid(),
+	updated_at: z.number().int(),
+	deleted_at: z.number().int().nullable().optional(),
+});
+
+export const syncRequestSchema = z
+	.object({
+		last_sync_at: z.number().int().optional(),
+		changes: z.object({
+			daily_reports: z.array(syncEntitySchema).optional(),
+			rides: z.array(syncEntitySchema).optional(),
+			expenses: z.array(syncEntitySchema).optional(),
+			clients: z.array(syncEntitySchema).optional(),
+			credit_payments: z.array(syncEntitySchema).optional(),
+		}),
+	})
+	.refine(
+		(data) => {
+			const totalEntities =
+				(data.changes.daily_reports?.length || 0) +
+				(data.changes.rides?.length || 0) +
+				(data.changes.expenses?.length || 0) +
+				(data.changes.clients?.length || 0) +
+				(data.changes.credit_payments?.length || 0);
+			return totalEntities <= 1000;
+		},
+		{
+			message: 'Máximo 1000 entidades por sincronización',
+		},
+	);
