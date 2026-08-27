@@ -10,7 +10,7 @@ export async function addExpense(
 ) {
 	const report = await db
 		.prepare(
-			'SELECT id, status, starting_mileage, starting_gasoline FROM daily_reports WHERE id = ? AND driver_id = ?',
+			'SELECT id, status, starting_mileage, starting_gasoline FROM daily_reports WHERE id = ? AND driver_id = ? AND deleted_at IS NULL',
 		)
 		.bind(reportId, userId)
 		.first();
@@ -51,7 +51,8 @@ export async function updateExpense(
 ) {
 	const expense = await db
 		.prepare(
-			`SELECT o.id, dr.status, dr.driver_id FROM outcomes o JOIN daily_reports dr ON o.daily_report_id = dr.id WHERE o.id = ?`,
+			`SELECT o.id, dr.status, dr.driver_id FROM outcomes o JOIN daily_reports dr ON o.daily_report_id = dr.id WHERE o.id = ? AND o.deleted_at IS NULL
+   AND dr.deleted_at IS NULL`,
 		)
 		.bind(expenseId)
 		.first();
@@ -84,7 +85,7 @@ export async function deleteExpense(
 ) {
 	const expense = await db
 		.prepare(
-			`SELECT o.id, dr.status, dr.driver_id FROM outcomes o JOIN daily_reports dr ON o.daily_report_id = dr.id WHERE o.id = ?`,
+			`SELECT o.id, dr.status, dr.driver_id FROM outcomes o JOIN daily_reports dr ON o.daily_report_id = dr.id WHERE o.id = ? AND o.deleted_at IS NULL`,
 		)
 		.bind(expenseId)
 		.first();
@@ -95,5 +96,9 @@ export async function deleteExpense(
 	if (expense.status === 'cerrado')
 		throw new Error('No se pueden eliminar gastos de un reporte cerrado');
 
-	await db.prepare('DELETE FROM outcomes WHERE id = ?').bind(expenseId).run();
+	const now = Math.floor(Date.now() / 1000);
+	await db
+		.prepare('UPDATE outcomes SET deleted_at = ?, updated_at = ? WHERE id = ?')
+		.bind(now, now, expenseId)
+		.run();
 }

@@ -11,7 +11,7 @@ export async function addRide(
 ) {
 	const report = await db
 		.prepare(
-			'SELECT id, status, starting_mileage, starting_gasoline FROM daily_reports WHERE id = ? AND driver_id = ?',
+			'SELECT id, status, starting_mileage, starting_gasoline FROM daily_reports WHERE id = ? AND driver_id = ? AND deleted_at IS NULL',
 		)
 		.bind(reportId, userId)
 		.first();
@@ -46,7 +46,7 @@ export async function addRide(
 		.run();
 
 	return await db
-		.prepare('SELECT * FROM rides WHERE id = ?')
+		.prepare('SELECT * FROM rides WHERE id = ? AND deleted_at IS NULL')
 		.bind(rideId)
 		.first();
 }
@@ -62,7 +62,8 @@ export async function updateRide(
 ) {
 	const ride = await db
 		.prepare(
-			`SELECT r.id, dr.status, dr.driver_id FROM rides r JOIN daily_reports dr ON r.daily_report_id = dr.id WHERE r.id = ?`,
+			`SELECT r.id, dr.status, dr.driver_id FROM rides r JOIN daily_reports dr ON r.daily_report_id = dr.id WHERE r.id = ? AND r.deleted_at IS NULL
+   AND dr.deleted_at IS NULL`,
 		)
 		.bind(rideId)
 		.first();
@@ -95,7 +96,7 @@ export async function deleteRide(
 ) {
 	const ride = await db
 		.prepare(
-			`SELECT r.id, dr.status, dr.driver_id FROM rides r JOIN daily_reports dr ON r.daily_report_id = dr.id WHERE r.id = ?`,
+			`SELECT r.id, dr.status, dr.driver_id FROM rides r JOIN daily_reports dr ON r.daily_report_id = dr.id WHERE r.id = ? AND r.deleted_at IS NULL`,
 		)
 		.bind(rideId)
 		.first();
@@ -106,5 +107,9 @@ export async function deleteRide(
 	if (ride.status === 'cerrado')
 		throw new Error('No se pueden eliminar viajes de un reporte cerrado');
 
-	await db.prepare('DELETE FROM rides WHERE id = ?').bind(rideId).run();
+	const now = Math.floor(Date.now() / 1000);
+	await db
+		.prepare('UPDATE rides SET deleted_at = ?, updated_at = ? WHERE id = ?')
+		.bind(now, now, rideId)
+		.run();
 }
