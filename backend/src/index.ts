@@ -7,6 +7,7 @@ import auth from './routes/auth';
 import dailyReports from './routes/dailyReports';
 import rides from './routes/rides';
 import expenses from './routes/expenses';
+import sync from './routes/sync';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -28,6 +29,7 @@ app.route('/auth', auth);
 app.route('/daily-reports', dailyReports);
 app.route('/rides', rides);
 app.route('/expenses', expenses);
+app.route('/sync', sync);
 
 // 404 handler
 app.notFound((c) => {
