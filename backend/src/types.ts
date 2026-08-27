@@ -58,6 +58,64 @@ export type DailyReport = {
 	submitted_at: number | null;
 	created_at: number;
 	updated_at: number;
+	deleted_at: number | null;
+};
+
+/**
+ * Ride type
+ */
+export type Ride = {
+	id: string;
+	daily_report_id: string;
+	amount: number;
+	platform: string;
+	payment_method: string;
+	client_id: string | null;
+	is_late_addition: number;
+	created_at: number;
+	updated_at: number;
+	deleted_at: number | null;
+};
+
+/**
+ * Expenses type
+ */
+export type Expenses = {
+	id: string;
+	daily_report_id: string;
+	category: string;
+	amount: number;
+	description: string;
+	created_at: number;
+	updated_at: number;
+	deleted_at: number | null;
+};
+
+/**
+ * Client type
+ */
+export type Client = {
+	id: string;
+	driver_id: string;
+	full_name: string;
+	phone: number | null;
+	created_at: number;
+	updated_at: number;
+	deleted_at: number | null;
+};
+
+/**
+ * CreditPayment type
+ */
+export type CreditPayment = {
+	id: string;
+	client_id: string | null;
+	amount: number;
+	payment_date: string;
+	notes: string | null;
+	created_at: number;
+	updated_at: number; //TODO add updated_at to the database table
+	deleted_at: number | null; //TODO same as above
 };
 
 // Add this to support c.set('user', ...) in middleware
@@ -80,10 +138,10 @@ export type SyncableEntity = {
  */
 export type SyncChanges = {
 	daily_reports?: DailyReport[];
-	rides?: any[];
-	expenses?: any[];
-	clients?: any[];
-	credit_payments?: any[];
+	rides?: Ride[];
+	expenses?: Expenses[];
+	clients?: Client[];
+	credit_payments?: CreditPayment[];
 };
 
 /**
@@ -92,6 +150,6 @@ export type SyncChanges = {
 export type SyncConflict = {
 	entity_type: string;
 	entity_id: string;
-	server_version: any;
-	client_version: any;
+	server_version: SyncableEntity;
+	client_version: SyncableEntity;
 };
