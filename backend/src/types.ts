@@ -153,3 +153,26 @@ export type SyncConflict = {
 	server_version: SyncableEntity;
 	client_version: SyncableEntity;
 };
+
+/**
+ * Refresh token type
+ */
+export type RefreshToken = {
+	id: string;
+	user_id: string;
+	token_hash: string;
+	device_info: string | null;
+	expires_at: number;
+	revoked_at: number | null;
+	created_at: number;
+};
+
+/**
+ * User profile type
+ */
+export type UserProfile = {
+	id: string;
+	email: string;
+	fullName: string;
+	role: UserRole;
+};
