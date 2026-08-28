@@ -1,19 +1,121 @@
 PRAGMA defer_foreign_keys=TRUE;
-CREATE TABLE IF NOT EXISTS users (   id TEXT PRIMARY KEY,   email TEXT UNIQUE NOT NULL,   password_hash TEXT,   google_id TEXT,   full_name TEXT NOT NULL,   role TEXT NOT NULL CHECK (role IN ('driver', 'admin')),   created_at INTEGER NOT NULL,   updated_at INTEGER NOT NULL , status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')));
-CREATE TABLE IF NOT EXISTS clients (   id TEXT PRIMARY KEY,   driver_id TEXT NOT NULL REFERENCES users(id),   full_name TEXT NOT NULL,   phone TEXT,   created_at INTEGER NOT NULL,   updated_at INTEGER NOT NULL. deleted_at INTEGER );
-CREATE TABLE IF NOT EXISTS daily_reports (   id TEXT PRIMARY KEY,   driver_id TEXT NOT NULL REFERENCES users(id),   report_date TEXT NOT NULL,   starting_mileage INTEGER,   ending_mileage INTEGER,   starting_gasoline INTEGER,   ending_gasoline INTEGER,   notes TEXT,   status TEXT NOT NULL CHECK (status IN ('borrador', 'cerrado')),   submitted_at INTEGER,   created_at INTEGER NOT NULL,   updated_at INTEGER NOT NULL, distance_driven INTEGER,   UNIQUE(driver_id, report_date),deleted_at INTEGER );
-CREATE TABLE IF NOT EXISTS rides (   id TEXT PRIMARY KEY,   daily_report_id TEXT NOT NULL REFERENCES daily_reports(id),   amount INTEGER NOT NULL,   platform TEXT CHECK (platform IN ('uber', 'didi', 'fuera de plataforma')),   payment_method TEXT NOT NULL CHECK (payment_method IN ('efectivo', 'sinpe', 'credito')),   client_id TEXT REFERENCES clients(id),   is_late_addition INTEGER DEFAULT 0,   created_at INTEGER NOT NULL,   updated_at INTEGER NOT NULL, deleted_at INTEGER );
-CREATE TABLE IF NOT EXISTS outcomes (   id TEXT PRIMARY KEY,   daily_report_id TEXT NOT NULL REFERENCES daily_reports(id),   category TEXT NOT NULL CHECK (category IN ('gasolina', 'personal', 'alimentacion', 'medicina', 'other')),   amount INTEGER NOT NULL,   description TEXT,   created_at INTEGER NOT NULL,   updated_at INTEGER NOT NULL, deleted_at INTEGER );
-CREATE TABLE IF NOT EXISTS credit_payments (   id TEXT PRIMARY KEY,   client_id TEXT NOT NULL REFERENCES clients(id),   amount INTEGER NOT NULL,   payment_date TEXT NOT NULL,   notes TEXT,   created_at INTEGER NOT NULL, deleted_at INTEGER );
-CREATE TABLE IF NOT EXISTS late_submissions (   id TEXT PRIMARY KEY,   driver_id TEXT NOT NULL REFERENCES users(id),   report_date TEXT NOT NULL,    data_type TEXT NOT NULL CHECK (data_type IN ('ride', 'outcome')),   data_json TEXT NOT NULL,    status TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),   reviewed_by TEXT REFERENCES users(id),   reviewed_at INTEGER,   created_at INTEGER NOT NULL );
-CREATE TABLE IF NOT EXISTS audit_logs (   id TEXT PRIMARY KEY,   user_id TEXT NOT NULL REFERENCES users(id),   action TEXT NOT NULL,   entity_type TEXT NOT NULL,   entity_id TEXT NOT NULL,   old_data TEXT,   new_data TEXT,   reason TEXT,   created_at INTEGER NOT NULL );
-CREATE TABLE IF NOT EXISTS sync_metadata (   key TEXT PRIMARY KEY,   last_sync_at INTEGER,   last_sync_version INTEGER );
-CREATE TABLE IF NOT EXISTS allowed_emails (   id TEXT PRIMARY KEY,   email TEXT NOT NULL UNIQUE,   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP );
+CREATE TABLE IF NOT EXISTS users (   
+  id TEXT PRIMARY KEY,   
+  email TEXT UNIQUE NOT NULL,  
+  password_hash TEXT,   
+  google_id TEXT,   
+  full_name TEXT NOT NULL,   
+  role TEXT NOT NULL CHECK (role IN ('driver', 'admin')),   
+  created_at INTEGER NOT NULL,   
+  updated_at INTEGER NOT NULL , 
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected'))
+);
+CREATE TABLE IF NOT EXISTS clients (   
+  id TEXT PRIMARY KEY,   
+  driver_id TEXT NOT NULL REFERENCES users(id),   
+  full_name TEXT NOT NULL,   
+  phone TEXT,   
+  created_at INTEGER NOT NULL,   
+  updated_at INTEGER NOT NULL, 
+  deleted_at INTEGER 
+);
+CREATE TABLE IF NOT EXISTS daily_reports (   
+  id TEXT PRIMARY KEY,   
+  driver_id TEXT NOT NULL REFERENCES users(id),   
+  report_date TEXT NOT NULL,   
+  starting_mileage INTEGER,   
+  ending_mileage INTEGER,   
+  starting_gasoline INTEGER,   
+  ending_gasoline INTEGER,   
+  notes TEXT,   
+  status TEXT NOT NULL CHECK (status IN ('borrador', 'cerrado')),   
+  submitted_at INTEGER,   
+  created_at INTEGER NOT NULL,   
+  updated_at INTEGER NOT NULL, 
+  distance_driven INTEGER,   
+  UNIQUE(driver_id, report_date),   
+  deleted_at INTEGER 
+);
+CREATE TABLE IF NOT EXISTS rides (   
+  id TEXT PRIMARY KEY,   
+  daily_report_id TEXT NOT NULL REFERENCES daily_reports(id),   
+  amount INTEGER NOT NULL,   
+  platform TEXT CHECK (platform IN ('uber', 'didi', 'fuera de plataforma')),   
+  payment_method TEXT NOT NULL CHECK (payment_method IN ('efectivo', 'sinpe', 'credito')),   
+  client_id TEXT REFERENCES clients(id),   
+  is_late_addition INTEGER DEFAULT 0,  
+  created_at INTEGER NOT NULL,   
+  updated_at INTEGER NOT NULL, 
+  deleted_at INTEGER 
+);
+CREATE TABLE IF NOT EXISTS outcomes (   
+  id TEXT PRIMARY KEY,   
+  daily_report_id TEXT NOT NULL REFERENCES daily_reports(id),   
+  category TEXT NOT NULL CHECK (category IN ('gasolina', 'personal', 'alimentacion', 'medicina', 'other')),   
+  amount INTEGER NOT NULL,   
+  description TEXT,   
+  created_at INTEGER NOT NULL,   
+  updated_at INTEGER NOT NULL, 
+  deleted_at INTEGER 
+);
+CREATE TABLE IF NOT EXISTS credit_payments (   
+  id TEXT PRIMARY KEY,   
+  client_id TEXT NOT NULL REFERENCES clients(id),   
+  amount INTEGER NOT NULL,   
+  payment_date TEXT NOT NULL,   
+  notes TEXT,   
+  created_at INTEGER NOT NULL, 
+  deleted_at INTEGER 
+);
+CREATE TABLE IF NOT EXISTS late_submissions (   
+  id TEXT PRIMARY KEY,   
+  driver_id TEXT NOT NULL REFERENCES users(id),  
+  report_date TEXT NOT NULL,    
+  data_type TEXT NOT NULL CHECK (data_type IN ('ride', 'outcome')),   
+  data_json TEXT NOT NULL,    
+  status TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),   
+  reviewed_by TEXT REFERENCES users(id),   
+  reviewed_at INTEGER,   
+  created_at INTEGER NOT NULL 
+);
+CREATE TABLE IF NOT EXISTS audit_logs (   
+  id TEXT PRIMARY KEY,   
+  user_id TEXT NOT NULL REFERENCES users(id),   
+  action TEXT NOT NULL,   
+  entity_type TEXT NOT NULL,   
+  entity_id TEXT NOT NULL,   
+  old_data TEXT,   
+  new_data TEXT,   
+  reason TEXT,   
+  created_at INTEGER NOT NULL 
+);
+CREATE TABLE IF NOT EXISTS sync_metadata (   
+  key TEXT PRIMARY KEY,   
+  last_sync_at INTEGER,   
+  last_sync_version INTEGER 
+);
+CREATE TABLE IF NOT EXISTS allowed_emails (   
+  id TEXT PRIMARY KEY,   
+  email TEXT NOT NULL UNIQUE,   
+  created_at TEXT NOT NULL DEFAULT 
+  CURRENT_TIMESTAMP 
+);
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  token_hash TEXT NOT NULL,
+  device_info TEXT,
+  expires_at INTEGER NOT NULL,
+  revoked_at INTEGER,
+  created_at INTEGER NOT NULL
+);
 INSERT INTO "allowed_emails" ("id","email","created_at") VALUES('252e9f3bbc5a477fa4b34bd82f0edfd0','jscafidi616@hotmail.com','2026-08-21 20:54:26');
 INSERT INTO "allowed_emails" ("id","email","created_at") VALUES('8cb097ded537fd602b7f401579a3eae1','barqueropao9@gmail.com','2026-08-21 20:54:26');
-CREATE INDEX idx_daily_reports_driver_date ON daily_reports(driver_id, report_date);
-CREATE INDEX idx_rides_daily_report ON rides(daily_report_id);
-CREATE INDEX idx_outcomes_daily_report ON outcomes(daily_report_id);
-CREATE INDEX idx_clients_driver ON clients(driver_id);
-CREATE INDEX idx_late_submissions_status ON late_submissions(status);
-CREATE INDEX idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_daily_reports_driver_date ON daily_reports(driver_id, report_date);
+CREATE INDEX IF NOT EXISTS idx_rides_daily_report ON rides(daily_report_id);
+CREATE INDEX IF NOT EXISTS idx_outcomes_daily_report ON outcomes(daily_report_id);
+CREATE INDEX IF NOT EXISTS idx_clients_driver ON clients(driver_id);
+CREATE INDEX IF NOT EXISTS idx_late_submissions_status ON late_submissions(status);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_hash ON refresh_tokens(token_hash);
