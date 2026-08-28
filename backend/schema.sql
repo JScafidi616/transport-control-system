@@ -124,12 +124,12 @@ CREATE TABLE IF NOT EXISTS allowed_emails (
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-  id TEXT PRIMARY KEY, 
-  user_id TEXT NOT NULL REFERENCES users(id), 
-  token_hash TEXT NOT NULL, 
-  device_info TEXT, 
-  expires_at INTEGER NOT NULL, 
-  revoked_at INTEGER, 
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token_hash TEXT NOT NULL,
+  device_info TEXT,
+  expires_at INTEGER NOT NULL,
+  revoked_at INTEGER,
   created_at INTEGER NOT NULL
 );
 INSERT 
@@ -138,6 +138,13 @@ VALUES
   (
     '252e9f3bbc5a477fa4b34bd82f0edfd0', 
     'jscafidi616@hotmail.com', '2026-08-21 20:54:26'
+  );
+INSERT 
+OR IGNORE INTO "allowed_emails" ("id", "email", "created_at") 
+VALUES 
+  (
+    '252e9f3bbc5a477fa4b34bd82f0edfd2', 
+    'jscafidi616+test@hotmail.com', '2026-08-21 20:54:26'
   );
 INSERT 
 OR IGNORE INTO "allowed_emails" ("id", "email", "created_at") 
