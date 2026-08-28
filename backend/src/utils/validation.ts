@@ -184,3 +184,14 @@ export const syncRequestSchema = z
 			message: 'Máximo 1000 entidades por sincronización',
 		},
 	);
+
+//
+// region refresh token and logout schemas
+//
+export const refreshTokenSchema = z.object({
+	refreshToken: z.string().min(1, 'Refresh token es requerido'),
+});
+
+export const logoutSchema = z.object({
+	refreshToken: z.string().optional(), // Optional: if provided, validates it; otherwise logs out all
+});
