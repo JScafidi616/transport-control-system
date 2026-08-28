@@ -4,6 +4,10 @@ import { z } from 'zod';
 import type { Env, Variables, ApiResponse, ApiError } from '../../types';
 import { verifyGoogleIdToken } from '../../services/google.service';
 import { loginOrRegisterWithGoogle } from '../../services/user.service';
+import {
+	createRefreshToken,
+	getUserProfile,
+} from '../../services/auth.service';
 
 const google = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -44,9 +48,9 @@ google.post('/', async (c) => {
 			);
 		}
 
-		// Generate JWT for approved user
+		// Generate access token (JWT, 7 days) for approved user
 		const secret = new TextEncoder().encode(c.env.JWT_SECRET);
-		const token = await new SignJWT({
+		const accessToken = await new SignJWT({
 			email: result.email,
 			role: result.role,
 		})
@@ -56,9 +60,28 @@ google.post('/', async (c) => {
 			.setExpirationTime('7d')
 			.sign(secret);
 
-		return c.json<ApiResponse<{ token: string; user: typeof result }>>({
+		// Create refresh token (revokes previous ones - single device policy)
+		const { token: refreshToken } = await createRefreshToken(
+			c.env.DB,
+			result.id,
+			c.req.header('X-Device-Info') || undefined,
+		);
+		// Get full user profile for client cache
+		const profile = await getUserProfile(c.env.DB, result.id);
+
+		return c.json<
+			ApiResponse<{
+				accessToken: string;
+				refreshToken: string;
+				user: typeof profile;
+			}>
+		>({
 			success: true,
-			data: { token, user: result },
+			data: {
+				accessToken,
+				refreshToken,
+				user: profile,
+			},
 		});
 	} catch (error) {
 		if (error instanceof z.ZodError) {
